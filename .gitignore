@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.Python
+build/
+dist/
+
+# OS-specific files
+.DS_Store
+.Trashes
+Thumbs.db
+ehthumbs.db
