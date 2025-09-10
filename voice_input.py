@@ -5,6 +5,7 @@ import whisper
 import tempfile
 import os
 import shutil
+import time # Import time for sleep
 
 class VoiceRecorder:
     def __init__(self, sample_rate=16000, channels=1, dtype='int16', hotkey="ctrl+space"):
@@ -89,24 +90,23 @@ class VoiceRecorder:
         except Exception as e:
             print(f"Error during transcription: {e}")
 
-    def _on_press(self, event):
-        if str(event.name) == self.hotkey.split('+')[-1] and not self.recording:
-            self.start_recording()
-
-    def _on_release(self, event):
-        if str(event.name) == self.hotkey.split('+')[-1] and self.recording:
-            self.stop_recording_and_transcribe()
-
     def run(self):
         print(f"Press and hold '{self.hotkey}' to record, release to transcribe.")
         print("Press 'esc' to exit.")
 
-        # Register hotkey for push-to-talk
-        keyboard.on_press_key(self.hotkey.split('+')[-1], self._on_press)
-        keyboard.on_release_key(self.hotkey.split('+')[-1], self._on_release)
+        while True:
+            if keyboard.is_pressed('esc'):
+                print("Exiting program.")
+                break
 
-        keyboard.wait('esc')
-        print("Exiting program.")
+            if keyboard.is_pressed(self.hotkey):
+                if not self.recording:
+                    self.start_recording()
+            else:
+                if self.recording:
+                    self.stop_recording_and_transcribe()
+            
+            time.sleep(0.05) # Small delay to prevent high CPU usage
 
 
 if __name__ == "__main__":
