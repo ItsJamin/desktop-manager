@@ -1,56 +1,131 @@
-# Requirements
+# Desktop Manager - Voice to Ollama Chat
 
-Must use Python 3.11
-Follow design principles like modularization, KISS, virtual environment, etc.
+Ein Python-Programm, das Spracheingaben über Whisper transkribiert und diese an Ollama weiterleitet für KI-gestützte Unterhaltungen.
 
-# Plan
+## Features
 
-## Step 1
+- **Spracheingabe**: Aufnahme über Hotkey (Ctrl+Space)
+- **Speech-to-Text**: Automatische Transkription mit OpenAI Whisper
+- **Ollama Integration**: Direkte Kommunikation mit lokalen Ollama-Modellen
+- **Konversationshistorie**: Behält den Gesprächskontext bei
+- **Flexibel**: Unterstützt verschiedene Ollama-Modelle
+- **Text-Modus**: Optional auch ohne Spracheingabe nutzbar
 
-- build a program which takes voice input on button press (alt+space)   
-- print out the said stuff  
-- use openai-whisper    
+## Voraussetzungen
 
-## Step 2 (flesh out before doing)
+### Software
+- Python 3.7+
+- [Ollama](https://ollama.ai/) installiert und laufend
+- FFmpeg (für Whisper Audio-Verarbeitung)
 
-- define a set of desktop actions via jsons
-- use local ollama to interpret what was said.
-- ollama should give back the correct desktop action in correct format.
+### Python-Abhängigkeiten
+```bash
+pip install -r requirements.txt
+```
 
+## Installation
 
-## Step 3 (flesh out before doing)
+1. Repository klonen oder Dateien herunterladen
+2. Abhängigkeiten installieren:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Ollama installieren und starten:
+   ```bash
+   # Ollama installieren (siehe https://ollama.ai/)
+   ollama serve
+   ```
+4. Ein Modell herunterladen (z.B.):
+   ```bash
+   ollama pull llama2
+   ```
 
-- write code which can execute these tasks
+## Verwendung
 
-## Installation on Windows
+### Voice-Chat Modus (Standard)
+```bash
+python ollama_chat.py
+```
 
-To set up and run this project on Windows, follow these steps:
+**Steuerung:**
+- `Ctrl+Space` gedrückt halten: Aufnahme starten
+- `Ctrl+Space` loslassen: Aufnahme beenden und an Ollama senden
+- `C` drücken: Konversationshistorie löschen
+- `ESC` drücken: Programm beenden
 
-1.  **Install Python 3.11**: Ensure you have Python 3.11 installed on your system. You can download it from the official Python website. Make sure to add Python to your PATH during installation.
+### Text-Chat Modus
+```bash
+python ollama_chat.py --text-only
+```
 
-2.  **Install FFmpeg**: This project uses `whisper` for transcription, which may require FFmpeg for certain audio formats.
-    *   Download FFmpeg from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html).
-    *   Extract the downloaded archive to a directory (e.g., `C:\ffmpeg`).
-    *   Add the `bin` directory of FFmpeg (e.g., `C:\ffmpeg\bin`) to your system's PATH environment variable.
+### Erweiterte Optionen
+```bash
+# Anderes Modell verwenden
+python ollama_chat.py --model llama3
 
-3.  **Create a Virtual Environment**: It's recommended to use a virtual environment to manage project dependencies.
-    ```bash
-    python -m venv venv
-    ```
+# Andere Ollama-URL
+python ollama_chat.py --url http://192.168.1.100:11434
 
-4.  **Activate the Virtual Environment**:
-    *   On Windows:
-        ```bash
-        .\venv\Scripts\activate
-        ```
+# Alle Optionen anzeigen
+python ollama_chat.py --help
+```
 
-5.  **Install Dependencies**: With the virtual environment activated, install the required Python packages:
-    ```bash
-    pip install -r requirements.txt
-    ```
+## Programmstruktur
 
-6.  **Run the Application**:
-    ```bash
-    python voice_input.py
-    ```
-    Press and hold `Ctrl+Space` to record, release to transcribe. Press `Esc` to exit.
+### `voice_input.py`
+- Ursprüngliches Voice-Recording-Modul
+- Verwendet Whisper für Speech-to-Text
+- Hotkey-basierte Aufnahmesteuerung
+
+### `ollama_chat.py`
+- Hauptprogramm mit Ollama-Integration
+- Zwei Hauptklassen:
+  - `OllamaChat`: Direkte Ollama-Kommunikation
+  - `VoiceToOllamaChat`: Integration von Voice-Input und Ollama
+
+## Funktionsweise
+
+1. **Spracheingabe**: Nutzer hält Ctrl+Space gedrückt und spricht
+2. **Transkription**: Audio wird mit Whisper zu Text konvertiert
+3. **Ollama-Anfrage**: Text wird an lokales Ollama-Modell gesendet
+4. **Antwort**: KI-Antwort wird in der Konsole angezeigt
+5. **Kontext**: Gesprächshistorie wird für Folgenachrichten beibehalten
+
+## Fehlerbehebung
+
+### Ollama-Verbindungsfehler
+- Prüfen ob Ollama läuft: `ollama serve`
+- Verfügbare Modelle prüfen: `ollama list`
+- Firewall/Port 11434 prüfen
+
+### Audio-Probleme
+- FFmpeg installiert? `ffmpeg -version`
+- Mikrofon-Berechtigungen prüfen
+- Audio-Gerät in Systemeinstellungen prüfen
+
+### Whisper-Modell-Download
+- Beim ersten Start wird das Whisper-Modell heruntergeladen
+- Internetverbindung erforderlich
+- Modell wird in temporärem Verzeichnis gespeichert
+
+## Anpassungen
+
+### Anderes Whisper-Modell
+In `voice_input.py` Zeile ändern:
+```python
+self.model = whisper.load_model("base")  # tiny, base, small, medium, large
+```
+
+### Anderer Hotkey
+```python
+recorder = VoiceRecorder(hotkey="ctrl+alt+space")
+```
+
+### Ollama-Parameter anpassen
+```python
+chat = OllamaChat(model="llama3", base_url="http://localhost:11434")
+```
+
+## Lizenz
+
+Dieses Projekt steht unter der MIT-Lizenz.
