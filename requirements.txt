@@ -1,4 +1,4 @@
 keyboard
 sounddevice
 numpy
-whisper
+openai-whisper
