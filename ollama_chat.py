@@ -138,6 +138,7 @@ Give nothing else BUT the JSON array of commands. Ensure the JSON is properly fo
     def clear_conversation(self):
         """Clear the conversation history"""
         self.conversation_history = []
+        self._set_system_prompt()
         print("Conversation history cleared.")
 
 if __name__ == "__main__":
