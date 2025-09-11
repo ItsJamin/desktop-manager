@@ -9,7 +9,52 @@ class OllamaChat:
         self.model = os.getenv("OLLAMA_MODEL", "deepseek-r1:8b")
         self.base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         self.conversation_history = []
+        self._set_system_prompt()
         
+    def _set_system_prompt(self):
+        system_prompt = """
+You are a desktop manager assistant on Windows. Your task is to translate user requests into a list of structured JSON commands.
+You MUST respond ONLY with a JSON array of command objects. Do NOT include any other text or explanations.
+
+Each command object must have a "command_type" and a "parameters" object.
+
+Available command types and their parameters:
+
+1.  "open_terminal_and_execute":
+    *   Description: Opens a terminal and executes a specified command.
+    *   Parameters:
+        *   "command" (string, required): The shell command to execute.
+
+2.  "open_application":
+    *   Description: Opens a specified application.
+    *   Parameters:
+        *   "application_name" (string, required): The name of the application to open (e.g., "notepad", "chrome", "vscode").
+
+3.  "open_url":
+    *   Description: Opens a specified URL in the default web browser.
+    *   Parameters:
+        *   "url" (string, required): The URL to open (e.g., "https://google.com").
+
+Example of expected JSON output:
+[
+  {
+    "command_type": "open_terminal_and_execute",
+    "parameters": {
+      "command": "ls -l"
+    }
+  },
+  {
+    "command_type": "open_application",
+    "parameters": {
+      "application_name": "notepad"
+    }
+  }
+]
+
+Give nothing else BUT the JSON array of commands. Ensure the JSON is properly formatted.
+"""
+        self.conversation_history.append({"role": "system", "content": system_prompt})
+
     def check_ollama_connection(self):
         """Check if Ollama is running and accessible"""
         try:

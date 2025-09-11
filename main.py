@@ -2,11 +2,14 @@ import keyboard
 import time
 from ollama_chat import OllamaChat
 from voice_input import VoiceRecorder
+from task_executor import TaskExecutor
+import json
 
 class MainApp:
     def __init__(self):
         self.ollama_chat = OllamaChat()
         self.voice_recorder = VoiceRecorder()
+        self.task_executor = TaskExecutor()
         self.hotkey = "ctrl+space" # Define hotkey here or load from .env
 
     def run_voice_chat(self):
@@ -45,7 +48,17 @@ class MainApp:
                     
                     if transcribed_text:
                         print(f"You said: {transcribed_text}")
-                        self.ollama_chat.send_message(transcribed_text)
+                        ollama_response = self.ollama_chat.send_message(transcribed_text)
+                        
+                        if ollama_response:
+                            try:
+                                # Attempt to parse Ollama's response as JSON commands
+                                self.task_executor.execute_commands(ollama_response)
+                            except json.JSONDecodeError:
+                                print("Ollama did not return valid JSON commands. Displaying raw response:")
+                                print(ollama_response)
+                        else:
+                            print("No response from Ollama.")
                     else:
                         print("No speech detected.")
             
