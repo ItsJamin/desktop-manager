@@ -13,3 +13,5 @@ dist/
 .Trashes
 Thumbs.db
 ehthumbs.db
+
+.env

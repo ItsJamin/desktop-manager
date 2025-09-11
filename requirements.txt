@@ -3,3 +3,4 @@ sounddevice
 numpy
 openai-whisper
 requests
+python-dotenv
