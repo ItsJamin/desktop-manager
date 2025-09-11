@@ -2,6 +2,9 @@ import sounddevice as sd
 import numpy as np
 import shutil
 import time # Import time for sleep
+import whisper
+import tempfile
+import os
 
 class VoiceRecorder:
     def __init__(self, sample_rate=16000, channels=1, dtype='int16'):
@@ -11,12 +14,21 @@ class VoiceRecorder:
         self.recording = False
         self.audio_data = []
         self.stream = None
+        self.whisper_model = None
         self._check_ffmpeg()  # Check for ffmpeg on initialization
+        self._load_whisper_model() # Load Whisper model on initialization
 
     def _check_ffmpeg(self):
         if shutil.which("ffmpeg") is None:
             print("Warning: FFmpeg not found. Whisper may fail for some formats.")
             print("Install FFmpeg from https://ffmpeg.org/download.html and add it to PATH.")
+
+    def _load_whisper_model(self):
+        if self.whisper_model is None:
+            print("Loading Whisper model (this may take a moment)...")
+            model_cache_dir = os.path.join(tempfile.gettempdir(), "whisper_models")
+            os.makedirs(model_cache_dir, exist_ok=True)
+            self.whisper_model = whisper.load_model("base", download_root=model_cache_dir)
 
     def _callback(self, indata, frames, time, status):
         """Called for each audio block."""
@@ -53,7 +65,7 @@ class VoiceRecorder:
 
         if not self.audio_data:
             print("No audio recorded.")
-            return None
+            return "" # Return empty string for no audio
 
         # Concatenate recorded blocks
         recorded_audio = np.concatenate(self.audio_data, axis=0)
@@ -69,4 +81,13 @@ class VoiceRecorder:
         if max_val > 0:
             recorded_audio /= max_val
         
-        return recorded_audio
+        # Transcribe the audio
+        try:
+            result = self.whisper_model.transcribe(
+                audio=recorded_audio,
+                fp16=False
+            )
+            return result['text'].strip()
+        except Exception as e:
+            print(f"Error during transcription: {e}")
+            return ""
